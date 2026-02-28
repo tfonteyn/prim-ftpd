@@ -136,8 +136,8 @@
     <string name="prefSummaryAllowedIpsPattern">அனுமதிக்கப்பட்ட ஐபி முகவரிகளின் முறை. ஒரு காடு அட்டை (*) கடைசி எழுத்தாக மட்டுமே பயன்படுத்தப்படலாம்.</string>
     <string name="prefTitleQuickSettingsRequiresUnlock">விரைவான அமைப்புகள் ஓடு திறத்தல் தேவை</string>
     <string name="prefSummaryQuickSettingsRequiresUnlock">விரைவான அமைப்புகள் ஓடைக் சொடுக்கு செய்வதன் மூலம் சேவையகத்தைத் தொடங்க/நிறுத்த சாதனம் திறக்கப்பட வேண்டும். இயக்கப்பட்டால், சாதனம் பூட்டப்பட்டால் அதைத் திறக்கும்படி கேட்கும்.</string>
-    <string name="prefRootCopyFiles">ரூட்: UP-/பதிவிறக்குவதற்காக கோப்புகளை TMP அடைவு க்கு நகலெடுக்கவும்</string>
-    <string name="prefSummaryRootCopyFiles">சில சாதனங்களில் டி.டி.யுடன் கோப்புகளை அணுகுவதில் சிக்கல்கள் உள்ளன. இந்த அமைப்பின் மூலம் கோப்புகள் முதலில் TMP அடைவு க்கு நகலெடுக்கப்பட்டு கோப்பு முறைமை வழிமுறைகளுடன் அணுகலாம். பெரிய கோப்புகளுக்கு முடக்கப்பட வேண்டும்.</string>
+    <string name="prefRootCopyFiles">ரூட்: மேல்-/பதிவிறக்குவதற்காகக் கோப்புகளைத் தற்காலிக அடைவு க்கு நகலெடு</string>
+    <string name="prefSummaryRootCopyFiles">சில சாதனங்களில் டி.டி.யுடன் கோப்புகளை அணுகுவதில் சிக்கல்கள் உள்ளன. இந்த அமைப்பின் மூலம் கோப்புகள் முதலில் தற்காலிக அடைவு க்கு நகலெடுக்கப்பட்டு கோப்பு முறைமை வழிமுறைகளுடன் அணுகலாம். பெரிய கோப்புகளுக்கு முடக்கப்பட வேண்டும்.</string>
     <string name="prefHostkeyAlgos">SFTP ஓச்ட்கி வழிமுறைகள்</string>
     <string name="prefSummaryHostkeyAlgos">SFTP சேவையக விசைகள் (ஓச்ட்கீ) உருவாக்க வழிமுறைகள்</string>
     <string name="licence">உரிமம்</string>
@@ -152,4 +152,9 @@
     <string name="storageType">சேமிப்பக வகை</string>
     <string name="storageTypePlainV2">பழைய எளிய கோப்பு முறைமை\n படிக்க மட்டும் அணுகல் கிடைத்ததா? எங்கள் <a href="https://www.github.com/wolpi/prim-ftpd/"> அறிவிலிமையம் பக்கம் </a> ஐப் பார்க்கவும்.</string>
     <string name="storageTypeRoot">சூப்பர் பயனர் (சாதனம் வேரூன்ற வேண்டும்)</string>
+    <string name="usernameLabel">பயனர் பெயர்: %s</string>
+    <string name="prefChooseBindIp">முக்கிய இடைமுகம் இல் இணைக்க IP ஐத் தேர்வு செய்யவும்</string>
+    <string name="prefSummaryChooseBindIp">சர்வர் தொடக்கத்தில் பிணைக்க ஐபியைத் தேர்வுசெய்ய முதன்மையான இடைமுகம் இல் ரேடியோ பொத்தான்களைக் காட்டுகிறது. மேலே உள்ள பிணைப்பு ஐபி விருப்பத்தை விட அதிக முன்னுரிமை உள்ளது. சேவையகம் வேறு ஏதேனும் பொறிமுறையால் தொடங்கப்பட்டால் அது செயல்படாது.</string>
+    <string name="fingerprintsCreationTimeLabel">உருவாக்கிய நேரம்</string>
+    <string name="unknown">தெரியவில்லை</string>
 </resources>
