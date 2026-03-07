@@ -45,6 +45,16 @@ You may help translate this app in [hosted weblate](https://hosted.weblate.org/p
 
 [<img alt="Translation State Detail" src="https://hosted.weblate.org/widget/pftpd/horizontal-auto.svg" />](https://hosted.weblate.org/engage/pftpd/)
 
+## App signing key
+
+Pre-built releases published here on GitHub are signed with a key having this fingerprints:
+
+```
+SHA1: 51:C8:76:95:D7:D7:69:FD:65:6E:55:41:79:EE:09:84:CD:DA:83:3D
+SHA256: 71:51:AE:6D:56:F1:56:E6:72:24:E7:CA:3F:9C:00:DA:6F:70:30:B6:6C:C8:44:3F:3B:B4:D3:F8:4E:EB:5C:95
+```
+
+
 ## SFTP vs SCP
 
 When accessing this app's server via scp, it might be necessary for some clients (specific versions of ssh coming with linux distros), to specify option -O. 
