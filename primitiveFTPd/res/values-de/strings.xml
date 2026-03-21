@@ -156,4 +156,5 @@
     <string name="prefShowTabNames">Reiternamen anzeigen</string>
     <string name="fingerprintsCreationTimeLabel">Erzeugungs-Zeit</string>
     <string name="unknown">unbekannt</string>
+    <string name="usernameLabel">Benutzername: %s</string>
 </resources>
