@@ -157,4 +157,7 @@
     <string name="fingerprintsCreationTimeLabel">Erzeugungs-Zeit</string>
     <string name="unknown">unbekannt</string>
     <string name="usernameLabel">Benutzername: %s</string>
+    <string name="add">Hinzufügen</string>
+    <string name="iconKeysFingerprints">Schlüssel-Fingerabdrücke</string>
+    <string name="qrFallback">keine Netzwerkschnittstellen, keine IP-Adressen, kein QR-Code</string>
 </resources>
