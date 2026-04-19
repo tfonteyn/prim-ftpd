@@ -12,6 +12,10 @@ import android.os.Bundle;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
+
 import org.primftpd.prefs.PrefsBean;
 import org.primftpd.R;
 import org.primftpd.share.QuickShareBean;
@@ -42,51 +46,43 @@ public class ServicesStartStopUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServicesStartStopUtil.class);
 
-    public static void startServers(PftpdFragment fragment) {
-        startServers(null, null, null, fragment, null);
+    public static void startServers(@NonNull Context context,
+                                    @Nullable FragmentManager fragmentManager,
+                                    @Nullable String chosenIp,
+                                    @Nullable KeyFingerprintProvider keyFingerprintProvider,
+                                    @Nullable PrefsBean prefsBean) {
+        startServers(context, prefsBean, keyFingerprintProvider, fragmentManager, null, chosenIp);
     }
+
     public static void startServers(Context context) {
-        startServers(context, null, null, null, null);
+        startServers(context, null, null, null, null, null);
     }
 
     public static void startServers(Context context, QuickShareBean quickShareBean) {
-        startServers(context, null, null, null, quickShareBean);
+        startServers(context, null, null, null, quickShareBean, null);
     }
 
     private static void startServers(
             Context context,
             PrefsBean prefsBean,
             KeyFingerprintProvider keyFingerprintProvider,
-            PftpdFragment fragment,
-            QuickShareBean quickShareBean) {
+            FragmentManager fragmentManager,
+            QuickShareBean quickShareBean,
+            String chosenIp) {
         LOGGER.trace("startServers()");
 
-        if (context == null && fragment != null) {
-            context = fragment.getContext();
-        }
         if (context == null) {
             LOGGER.error("context is null, not starting server");
             return;
         }
 
         if (prefsBean == null) {
-            if (fragment != null) {
-                prefsBean = fragment.getPrefsBean();
-            }
-            if (prefsBean == null) {
-                SharedPreferences prefs = LoadPrefsUtil.getPrefs(context);
-                prefsBean = LoadPrefsUtil.loadPrefs(LOGGER, prefs);
-            }
+            SharedPreferences prefs = LoadPrefsUtil.getPrefs(context);
+            prefsBean = LoadPrefsUtil.loadPrefs(LOGGER, prefs);
         }
         if (keyFingerprintProvider == null) {
-            if (fragment != null) {
-                keyFingerprintProvider = fragment.getKeyFingerprintProvider();
-            }
-            if (keyFingerprintProvider == null) {
-                keyFingerprintProvider = new KeyFingerprintProvider();
-            }
+            keyFingerprintProvider = new KeyFingerprintProvider();
         }
-        String chosenIp = fragment != null ? fragment.getChosenIp() : null;
 
         if (!isPasswordOk(prefsBean)) {
             Toast.makeText(
@@ -94,7 +90,7 @@ public class ServicesStartStopUtil {
                 R.string.haveToSetAuthMechanism,
                 Toast.LENGTH_LONG).show();
 
-            if (fragment == null) {
+            if (fragmentManager == null) {
                 // Launch the main activity so that the user may set their password.
                 Intent activityIntent = new Intent(context, MainTabsActivity.class);
                 activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -104,12 +100,12 @@ public class ServicesStartStopUtil {
             boolean continueServerStart = true;
             if (prefsBean.getServerToStart().startSftp()) {
                 boolean keyPresent = true;
-                if (fragment != null) {
+                if (fragmentManager != null) {
                     keyPresent = isKeyPresent(keyFingerprintProvider, context);
                     if (!keyPresent) {
                         // cannot start sftp server when key is not present
                         // ask user to generate it
-                        showGenKeyDialog(fragment);
+                        showGenKeyDialog(fragmentManager);
                         continueServerStart = false;
                     }
                 }
@@ -171,13 +167,13 @@ public class ServicesStartStopUtil {
         }
     }
 
-    private static void showGenKeyDialog(PftpdFragment fragment) {
+    private static void showGenKeyDialog(FragmentManager fragmentManager) {
         LOGGER.trace("showGenKeyDialog()");
-        GenKeysAskDialogFragment askDiag = new GenKeysAskDialogFragment(fragment);
+        GenKeysAskDialogFragment askDiag = new GenKeysAskDialogFragment();
         Bundle diagArgs = new Bundle();
         diagArgs.putBoolean(GenKeysAskDialogFragment.KEY_START_SERVER, true);
         askDiag.setArguments(diagArgs);
-        askDiag.show(fragment.requireActivity().getSupportFragmentManager(), PftpdFragment.DIALOG_TAG);
+        askDiag.show(fragmentManager, PftpdFragment.DIALOG_TAG);
     }
 
     private static void startServerByIntent(Intent intent, Context context) {

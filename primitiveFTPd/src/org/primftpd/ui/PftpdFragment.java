@@ -48,12 +48,10 @@ import org.primftpd.events.ServerInfoRequestEvent;
 import org.primftpd.events.ServerInfoResponseEvent;
 import org.primftpd.events.ServerStateChangedEvent;
 import org.primftpd.prefs.LoadPrefsUtil;
-import org.primftpd.prefs.PrefsBean;
 import org.primftpd.prefs.StorageType;
 import org.primftpd.util.IpAddressBean;
 import org.primftpd.util.IpAddressProvider;
 import org.primftpd.util.KeyFingerprintBean;
-import org.primftpd.util.KeyFingerprintProvider;
 import org.primftpd.util.SampleAuthKeysFileCreator;
 import org.primftpd.util.ServersRunningBean;
 import org.primftpd.util.ServicesStartStopUtil;
@@ -70,9 +68,11 @@ import java.util.concurrent.Executors;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 public class PftpdFragment extends Fragment implements RecreateLogger, RadioGroup.OnCheckedChangeListener {
 
@@ -92,9 +92,8 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    private PrefsBean prefsBean;
     private final IpAddressProvider ipAddressProvider = new IpAddressProvider();
-    private final KeyFingerprintProvider keyFingerprintProvider = new KeyFingerprintProvider();
+
     private ServersRunningBean serversRunning;
     private long timestampOfLastEvent = 0;
 
@@ -105,10 +104,17 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
     private boolean onStartOngoing = false;
 
-    private String chosenIp;
+    SharedViewModel vm;
 
     protected int getLayoutId() {
         return R.layout.main;
+    }
+
+    @Override
+    public void onCreate(@Nullable final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        vm = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
     /**
@@ -122,6 +128,8 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
         logger.debug("onCreateView()");
 
+        vm.onShowKeyFingerprints().observe(getViewLifecycleOwner(),
+                                           aVoid -> showKeyFingerprints());
         // layout
         View view = inflater.inflate(getLayoutId(), container, false);
 
@@ -130,7 +138,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         try (ExecutorService executorService = Executors.newSingleThreadExecutor()) {
             executorService.execute(() -> {
                 logger.trace("CalcPubkeyFinterprintsTask()");
-                keyFingerprintProvider.calcPubkeyFingerprints(fragment.getContext());
+                vm.getKeyFingerprintProvider().calcPubkeyFingerprints(fragment.getContext());
                 view.post(fragment::showKeyFingerprints);
             });
         }
@@ -153,11 +161,15 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         SharedPreferences prefs = LoadPrefsUtil.getPrefs(getContext());
         Boolean startOnOpen = LoadPrefsUtil.startOnOpen(prefs);
         if (startOnOpen) {
-            keyFingerprintProvider.calcPubkeyFingerprints(getContext()); // see GH issue #204
-            ServicesStartStopUtil.startServers(this);
+            vm.getKeyFingerprintProvider().calcPubkeyFingerprints(getContext()); // see GH issue #204
+            ServicesStartStopUtil.startServers(getContext(),
+                                               requireActivity().getSupportFragmentManager(),
+                                               vm.getChosenIp(),
+                                               vm.getKeyFingerprintProvider(),
+                                               vm.getPrefsBean());
         }
 
-        // init views (laoding & client action texts)
+        // init views (loading & client action texts)
         addressesLoading = view.findViewById(R.id.addressesLoading);
         clientActionView1 = view.findViewById(R.id.clientActionsLine1);
         clientActionView2 = view.findViewById(R.id.clientActionsLine2);
@@ -188,7 +200,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         logger.debug("onStart()");
         onStartOngoing = true;
 
-        loadPrefs();
+        vm.loadPrefs(getContext(), logger);
         showLogindata();
 
         // init storage type radio
@@ -197,7 +209,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
             return;
         }
         ((RadioGroup) view.findViewById(R.id.radioGroupStorage)).setOnCheckedChangeListener(this);
-        switch (prefsBean.getStorageType()) {
+        switch (vm.getPrefsBean().getStorageType()) {
             case PLAIN:
                 ((RadioButton) view.findViewById(R.id.radioStoragePlain)).setChecked(true);
                 break;
@@ -206,15 +218,15 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
                 break;
             case SAF:
                 ((RadioButton) view.findViewById(R.id.radioStorageSaf)).setChecked(true);
-                showSafUrl(prefsBean.getSafUrl());
+                showSafUrl(vm.getPrefsBean().getSafUrl());
                 break;
             case RO_SAF:
                 ((RadioButton) view.findViewById(R.id.radioStorageRoSaf)).setChecked(true);
-                showSafUrl(prefsBean.getSafUrl());
+                showSafUrl(vm.getPrefsBean().getSafUrl());
                 break;
             case VIRTUAL:
                 ((RadioButton) view.findViewById(R.id.radioStorageVirtual)).setChecked(true);
-                showSafUrl(prefsBean.getSafUrl());
+                showSafUrl(vm.getPrefsBean().getSafUrl());
                 break;
         }
 
@@ -245,8 +257,8 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         }
         try (ExecutorService executorService = Executors.newSingleThreadExecutor()) {
             executorService.execute(() -> {
-                if (!ipAddressProvider.isIpAvail(prefsBean.getBindIp())) {
-                    String msg = "IP " + prefsBean.getBindIp() +
+                if (!ipAddressProvider.isIpAvail(vm.getPrefsBean().getBindIp())) {
+                    String msg = "IP " + vm.getPrefsBean().getBindIp() +
                             " is currently not assigned to an interface. May lead to a crash.";
                     view.post(() ->
                         Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show()
@@ -322,7 +334,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         }
 
         if (storageType == StorageType.PLAIN || storageType == StorageType.ROOT) {
-            loadPrefs();
+            vm.loadPrefs(getContext(), logger);
             checkSafAccess();
         }
     }
@@ -347,7 +359,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
                 // release old permissions
                 FragmentActivity activity = requireActivity();
-                String oldUrl = prefsBean.getSafUrl();
+                String oldUrl = vm.getPrefsBean().getSafUrl();
                 if (!StringUtils.isBlank(oldUrl)) {
                     try {
                         activity.getContentResolver()
@@ -376,7 +388,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
                 showSafUrl(uriStr);
 
                 // update prefs
-                loadPrefs();
+                vm.loadPrefs(getContext(), logger);
 
                 // note: onResume() is about to be called
             }
@@ -390,14 +402,14 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
             return;
         }
         RadioButton safRadio = view.findViewById(R.id.radioStorageSaf);
-        if (prefsBean.getStorageType() == StorageType.SAF
-                || prefsBean.getStorageType() == StorageType.RO_SAF) {
+        if (vm.getPrefsBean().getStorageType() == StorageType.SAF
+                || vm.getPrefsBean().getStorageType() == StorageType.RO_SAF) {
             // let's see if the OS has persisted something for us
             List<UriPermission> persistedUriPermissions =
                     requireActivity().getContentResolver().getPersistedUriPermissions();
             for (UriPermission uriPerm : persistedUriPermissions) {
                 logger.debug("persisted uri perm: '{}', pref uri: '{}'",
-                        uriPerm.getUri(), prefsBean.getSafUrl());
+                        uriPerm.getUri(), vm.getPrefsBean().getSafUrl());
             }
             if (persistedUriPermissions.isEmpty()) {
                 logger.debug("no persisted uri perm");
@@ -405,7 +417,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
             Cursor cursor = null;
             try {
-                String url = prefsBean.getSafUrl();
+                String url = vm.getPrefsBean().getSafUrl();
                 Uri uri = Uri.parse(url);
                 cursor = requireActivity().getContentResolver().query(
                         uri,
@@ -483,8 +495,8 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         if (chooseBindIp) {
             radioGroup = new RadioGroup(this.getContext());
         } else {
-            // reset chosenIp, if user has diabled the preference again
-            this.chosenIp = null;
+            // reset chosenIp, if user has disabled the preference again
+            vm.setChosenIp(null);
         }
         radioGroupHolder[0] = radioGroup;
 
@@ -503,11 +515,11 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
                     radio.setText(ipAddressBean.getDisplayName());
                     radio.setId(idx);
                     radioButtonIdToIpaddr.put(idx, ipAddressBean.getIpAddress());
-                    if (this.chosenIp != null) {
-                        if (ipAddressBean.getIpAddress().equals(this.chosenIp)) {
+                    if (vm.getChosenIp() != null) {
+                        if (ipAddressBean.getIpAddress().equals(vm.getChosenIp())) {
                             radio.setChecked(true);
                         }
-                    } else if (ipAddressBean.getIpAddress().equals(prefsBean.getBindIp())) {
+                    } else if (ipAddressBean.getIpAddress().equals(vm.getPrefsBean().getBindIp())) {
                         radio.setChecked(true);
                     }
                     idx = idx + 1;
@@ -522,10 +534,8 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
             if (chooseBindIp) {
                 container.addView(radioGroupHolder[0]);
-
-                PftpdFragment fragment = this;
                 radioGroupHolder[0].setOnCheckedChangeListener((group, checkedId) ->
-                        fragment.chosenIp = radioButtonIdToIpaddr.get(checkedId)
+                        vm.setChosenIp(radioButtonIdToIpaddr.get(checkedId))
                 );
             }
         });
@@ -541,26 +551,26 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         }
         if (isLeftToRight) {
             ((TextView) view.findViewById(R.id.ftpTextView))
-                    .setText("ftp / " + prefsBean.getPortStr() + " / " +
+                    .setText("ftp / " + vm.getPrefsBean().getPortStr() + " / " +
                             getText(serversRunning.ftp
                                     ? R.string.serverStarted
                                     : R.string.serverStopped));
 
             ((TextView) view.findViewById(R.id.sftpTextView))
-                    .setText("sftp / " + prefsBean.getSecurePortStr() + " / " +
+                    .setText("sftp / " + vm.getPrefsBean().getSecurePortStr() + " / " +
                             getText(serversRunning.ssh
                                     ? R.string.serverStarted
                                     : R.string.serverStopped));
         } else {
             ((TextView) view.findViewById(R.id.ftpTextView))
-                    .setText(prefsBean.getPortStr() + " / " +
+                    .setText(vm.getPrefsBean().getPortStr() + " / " +
                             getText(serversRunning.ftp
                                     ? R.string.serverStarted
                                     : R.string.serverStopped)
                             + " / " + "ftp");
 
             ((TextView) view.findViewById(R.id.sftpTextView))
-                    .setText(prefsBean.getSecurePortStr() + " / " +
+                    .setText(vm.getPrefsBean().getSecurePortStr() + " / " +
                             getText(serversRunning.ssh
                                     ? R.string.serverStarted
                                     : R.string.serverStopped)
@@ -575,17 +585,17 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         }
 
         TextView usernameView = view.findViewById(R.id.usernameTextView);
-        usernameView.setText(getString(R.string.usernameLabel, prefsBean.getUserName()));
+        usernameView.setText(getString(R.string.usernameLabel, vm.getPrefsBean().getUserName()));
 
         TextView anonymousView = view.findViewById(R.id.anonymousLoginTextView);
-        anonymousView.setText(getString(R.string.isAnonymous, prefsBean.isAnonymousLogin()));
+        anonymousView.setText(getString(R.string.isAnonymous, vm.getPrefsBean().isAnonymousLogin()));
 
         TextView passwordPresentView = view.findViewById(R.id.passwordPresentTextView);
         passwordPresentView.setText(getString(R.string.passwordPresent,
-                StringUtils.isNotEmpty(prefsBean.getPassword())));
+                StringUtils.isNotEmpty(vm.getPrefsBean().getPassword())));
 
         TextView pubKeyAuthView = view.findViewById(R.id.pubKeyAuthTextView);
-        pubKeyAuthView.setText(getString(R.string.pubKeyAuth, prefsBean.isPubKeyAuth()));
+        pubKeyAuthView.setText(getString(R.string.pubKeyAuth, vm.getPrefsBean().isPubKeyAuth()));
 
         displayNormalStorageAccess();
         displayFullStorageAccess();
@@ -734,7 +744,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
             return;
         }
         // find algo to show
-        HostKeyAlgorithm chosenAlgo = keyFingerprintProvider.findPreferredHostKeyAlog(this.getContext());
+        HostKeyAlgorithm chosenAlgo = vm.getKeyFingerprintProvider().findPreferredHostKeyAlog(this.getContext());
 
         // show info about chosen algo and it's key
         ((TextView) view.findViewById(R.id.keyFingerprintMd5Label))
@@ -744,7 +754,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         ((TextView) view.findViewById(R.id.keyFingerprintSha256Label))
                 .setText("SHA256 (" + chosenAlgo.getDisplayName() + ")");
 
-        KeyFingerprintBean keyFingerprintBean = keyFingerprintProvider.getFingerprints().get(chosenAlgo);
+        KeyFingerprintBean keyFingerprintBean = vm.getKeyFingerprintProvider().getFingerprints().get(chosenAlgo);
 
         if (keyFingerprintBean != null) {
             ((TextView) view.findViewById(R.id.keyFingerprintMd5TextView))
@@ -756,11 +766,10 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         }
 
         // create onRefreshListener
-        PftpdFragment pftpdFragment = this;
         View refreshButton = view.findViewById(R.id.keyFingerprintsLabel);
         refreshButton.setOnClickListener(v -> {
             logger.trace("refreshButton OnClickListener");
-            GenKeysAskDialogFragment askDiag = new GenKeysAskDialogFragment(pftpdFragment);
+            GenKeysAskDialogFragment askDiag = new GenKeysAskDialogFragment();
             askDiag.show(requireActivity().getSupportFragmentManager(), DIALOG_TAG);
         });
 
@@ -899,27 +908,8 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         }
     }
 
-    protected void loadPrefs() {
-        logger.debug("loadPrefs()");
-
-        SharedPreferences prefs = LoadPrefsUtil.getPrefs(getContext());
-        this.prefsBean = LoadPrefsUtil.loadPrefs(logger, prefs);
-    }
-
-    public PrefsBean getPrefsBean() {
-        return prefsBean;
-    }
-
-    public KeyFingerprintProvider getKeyFingerprintProvider() {
-        return keyFingerprintProvider;
-    }
-
     @Override
     public void recreateLogger() {
         this.logger = LoggerFactory.getLogger(getClass());
-    }
-
-    public String getChosenIp() {
-        return chosenIp;
     }
 }

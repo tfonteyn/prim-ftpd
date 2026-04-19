@@ -38,7 +38,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 public class QrFragment extends Fragment implements RecreateLogger {
 
@@ -51,12 +53,15 @@ public class QrFragment extends Fragment implements RecreateLogger {
     private TextView fallbackTextView;
     private ProgressBar qrLoading;
 
-    private String lastChosenIp = null;
+    private String lastChosenIp;
 
-    final private PftpdFragment pftpdFragment;
+    private SharedViewModel vm;
 
-    public QrFragment(PftpdFragment pftpdFragment) {
-        this.pftpdFragment = pftpdFragment;
+    @Override
+    public void onCreate(@Nullable final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        vm = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
     @Override
@@ -81,11 +86,11 @@ public class QrFragment extends Fragment implements RecreateLogger {
     @Override
     public void onResume() {
         super.onResume();
-        draw(pftpdFragment.getChosenIp());
+        draw(vm.getChosenIp());
     }
 
     public void drawIfChanged() {
-        String chosenIp = pftpdFragment.getChosenIp();
+        final String chosenIp = vm.getChosenIp();
         if (!Objects.equals(lastChosenIp, chosenIp)) {
             logger.debug("redraw needed");
             draw(chosenIp);
@@ -117,9 +122,9 @@ public class QrFragment extends Fragment implements RecreateLogger {
                 false,
                 isLeftToRight);
 
-        SharedPreferences prefs = LoadPrefsUtil.getPrefs(getContext());
-        PrefsBean prefsBean = LoadPrefsUtil.loadPrefs(logger, prefs);
+        PrefsBean prefsBean = vm.getPrefsBean(getContext(), logger);
 
+        SharedPreferences prefs = LoadPrefsUtil.getPrefs(getContext());
         Boolean showIpv4 = LoadPrefsUtil.showIpv4InNotification(prefs);
         Boolean showIpv6 = LoadPrefsUtil.showIpv6InNotification(prefs);
 
