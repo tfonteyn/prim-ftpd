@@ -124,8 +124,8 @@
     <string name="prefTitleAnonymousLogin">anonymer Login</string>
     <string name="prefTitlePubKeyAuth">Public-Key-Authentifizierung</string>
     <string name="isServerRunning">Läuft der Server?</string>
-    <string name="widgetTextStop">stoppe (s)ftpd</string>
-    <string name="widgetTextStart">starte (s)ftpd</string>
+    <string name="widgetTextStop">Stoppe (s)ftpd</string>
+    <string name="widgetTextStart">Starte (s)ftpd</string>
     <string name="clientActionsLabel">Client Action Log</string>
     <string name="quickShareInfoActivityV2">Ausführung im QuickShare-Modus für %1d Datei(en)</string>
     <string name="statsReceivedPerSec">Empfangen pro Sekunde</string>
