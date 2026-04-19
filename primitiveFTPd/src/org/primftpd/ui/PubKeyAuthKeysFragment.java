@@ -59,9 +59,6 @@ public class PubKeyAuthKeysFragment extends Fragment {
             });
         }
 
-        List<String> keys = vm.loadKeysForDisplay(getContext(), logger);
-        displayKeys(view, keys);
-
         return view;
     }
 
@@ -70,11 +67,14 @@ public class PubKeyAuthKeysFragment extends Fragment {
                               @Nullable final Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        vm.onDisplayKeys().observe(getViewLifecycleOwner(),
-                                   keys -> displayKeys(getView(), keys));
+        vm.onDisplayKeys().observe(getViewLifecycleOwner(), this::displayKeys);
+
+        List<String> keys = vm.loadKeysForDisplay(getContext(), logger);
+        displayKeys(keys);
     }
 
-    private void displayKeys(View view, List<String> keys) {
+    private void displayKeys(List<String> keys) {
+        final View view = getView();
         LinearLayout container = view.findViewById(R.id.pubkeyAuthKeysContainer);
         container.removeAllViews();
         for (String key : keys) {
