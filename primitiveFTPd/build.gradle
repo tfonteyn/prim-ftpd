@@ -91,6 +91,8 @@ dependencies {
     implementation(libs.androidx.coordinatorlayout)
     implementation(libs.androidx.documentfile)
     implementation(libs.androidx.fragment)
+    implementation(libs.androidx.lifecycle.livedata)
+    implementation(libs.androidx.lifecycle.viewmodel)
     implementation(libs.androidx.preference)
     implementation(libs.androidx.recyclerview)
 
