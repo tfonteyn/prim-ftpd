@@ -781,7 +781,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         showAllKeysFingerprints.setText(spannable);
         showAllKeysFingerprints.setOnClickListener(v -> {
             TabLayout tabLayout = view.getRootView().findViewById(R.id.tabs);
-            TabLayout.Tab tab = tabLayout.getTabAt(MainTabsActivity.INDEX_FINGERPRINTS);
+            TabLayout.Tab tab = tabLayout.getTabAt(vm.getFingerprintsFragmentTabIndex());
             if (tab != null) {
                 tab.select();
             }

@@ -41,6 +41,8 @@ public class SharedViewModel
     private String chosenIp;
     private PrefsBean prefsBean;
 
+    private int fingerprintsFragmentTabIndex;
+
     private final MutableLiveData<Void> showKeyFingerprints = new MutableLiveData<>();
     private final MutableLiveData<Void> updateQrCode = new MutableLiveData<>();
 
@@ -112,6 +114,14 @@ public class SharedViewModel
 
     void setChosenIp(final String chosenIp) {
         this.chosenIp = chosenIp;
+    }
+
+    public int getFingerprintsFragmentTabIndex() {
+        return fingerprintsFragmentTabIndex;
+    }
+
+    public void setFingerprintsFragmentTabIndex(final int fingerprintsFragmentTabIndex) {
+        this.fingerprintsFragmentTabIndex = fingerprintsFragmentTabIndex;
     }
 
     KeyFingerprintProvider getKeyFingerprintProvider() {

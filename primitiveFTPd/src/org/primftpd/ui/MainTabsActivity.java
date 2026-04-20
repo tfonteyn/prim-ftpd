@@ -40,7 +40,6 @@ import androidx.viewpager.widget.ViewPager;
 
 public class MainTabsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    protected static int INDEX_FINGERPRINTS = 0;
     protected static final String TAB_NAME_MAIN_UI = "pftpd";
     protected static final String TAB_NAME_QR = "QR";
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -95,7 +94,7 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
         adapter.addFragment(new CleanSpaceFragment());
         adapter.addFragment(new ClientActionFragment());
         adapter.addFragment(new KeysFingerprintsFragment());
-        INDEX_FINGERPRINTS = adapter.getCount() - 1;
+        vm.setFingerprintsFragmentTabIndex(adapter.getCount() - 1);
         adapter.addFragment(new PubKeyAuthKeysFragment());
         adapter.addFragment(new FtpPrefsFragment());
         adapter.addFragment(new AboutFragment());
