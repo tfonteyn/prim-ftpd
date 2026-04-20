@@ -42,11 +42,16 @@ public class SharedViewModel
     private PrefsBean prefsBean;
 
     private final MutableLiveData<Void> showKeyFingerprints = new MutableLiveData<>();
+    private final MutableLiveData<Void> updateQrCode = new MutableLiveData<>();
 
     private final MutableLiveData<List<String>> displayKeys = new MutableLiveData<>();
 
     MutableLiveData<Void> onShowKeyFingerprints() {
         return showKeyFingerprints;
+    }
+
+    MutableLiveData<Void> onUpdateQrCode() {
+        return updateQrCode;
     }
 
     MutableLiveData<List<String>> onDisplayKeys() {
@@ -113,6 +118,9 @@ public class SharedViewModel
         return keyFingerprintProvider;
     }
 
+    void updateQrCode() {
+        updateQrCode.setValue(null);
+    }
 
     List<String> loadKeysForDisplay(Context context,
                                     Logger logger) {

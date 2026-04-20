@@ -48,8 +48,6 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
     protected MenuItem startIcon;
     protected MenuItem stopIcon;
 
-    protected PftpdFragment pftpdFragment;
-    protected QrFragment qrFragment;
     private MainAdapter adapter;
     SharedViewModel vm;
 
@@ -92,10 +90,8 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
         vm = new ViewModelProvider(this).get(SharedViewModel.class);
         vm.init(this, logger);
 
-        this.pftpdFragment = createPftpdFragment();
-        this.qrFragment = new QrFragment();
-        adapter.addFragment(pftpdFragment);
-        adapter.addFragment(qrFragment);
+        adapter.addFragment(createPftpdFragment());
+        adapter.addFragment(new QrFragment());
         adapter.addFragment(new CleanSpaceFragment());
         adapter.addFragment(new ClientActionFragment());
         adapter.addFragment(new KeysFingerprintsFragment());
@@ -118,7 +114,7 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
                 if (tabCharSeq != null) {
                     String tabText = tabCharSeq.toString();
                     if (TAB_NAME_QR.equals(tabText)) {
-                        qrFragment.drawIfChanged();
+                        vm.updateQrCode();
                     }
                 }
             }

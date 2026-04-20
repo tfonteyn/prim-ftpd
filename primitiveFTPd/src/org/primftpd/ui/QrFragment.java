@@ -84,6 +84,14 @@ public class QrFragment extends Fragment implements RecreateLogger {
     }
 
     @Override
+    public void onViewCreated(@NonNull final View view,
+                              @Nullable final Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        vm.onUpdateQrCode().observe(getViewLifecycleOwner(), aVoid -> drawIfChanged());
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         draw(vm.getChosenIp());
