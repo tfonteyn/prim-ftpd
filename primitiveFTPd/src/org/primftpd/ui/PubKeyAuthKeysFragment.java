@@ -19,23 +19,27 @@ import org.primftpd.util.ServicesStartStopUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 public class PubKeyAuthKeysFragment extends Fragment {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    protected final boolean isLeanback;
 
-    public PubKeyAuthKeysFragment(boolean isLeanback) {
-        this.isLeanback = isLeanback;
+    private SharedViewModel vm;
+
+    @Override
+    public void onCreate(@Nullable final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        vm = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
 
     @Override
@@ -46,55 +50,31 @@ public class PubKeyAuthKeysFragment extends Fragment {
         View view = inflater.inflate(R.layout.pubkey_auth_keys, container, false);
 
         FloatingActionButton addButton = view.findViewById(R.id.addPubkeyAuthKey);
-        if (isLeanback) {
+        if (vm.isLeanBack()) {
             addButton.setVisibility(View.GONE);
         } else {
             addButton.setOnClickListener(v -> {
-                AddPubkeyAuthKeyDialogFragment addDiag = new AddPubkeyAuthKeyDialogFragment(this);
+                AddPubkeyAuthKeyDialogFragment addDiag = new AddPubkeyAuthKeyDialogFragment();
                 addDiag.show(requireActivity().getSupportFragmentManager(), PftpdFragment.DIALOG_TAG);
             });
         }
 
-        List<String> keys = loadKeysForDisplay();
-        displayKeys(view, keys);
-
         return view;
     }
 
-    private List<String> loadKeysForDisplay() {
-        String[] keyPaths = new java.lang.String[]{
-                Defaults.PUB_KEY_AUTH_KEY_PATH_OLDER,
-                Defaults.PUB_KEY_AUTH_KEY_PATH_OLD,
-                Defaults.pubKeyAuthKeyPath(getContext()),
-        };
+    @Override
+    public void onViewCreated(@NonNull final View view,
+                              @Nullable final Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        List<String> keys = new ArrayList<>();
-        for (String path : keyPaths) {
-            keys.addAll(loadKeysOfFile(path));
-        }
-        return keys;
+        vm.onDisplayKeys().observe(getViewLifecycleOwner(), this::displayKeys);
+
+        List<String> keys = vm.loadKeysForDisplay(getContext(), logger);
+        displayKeys(keys);
     }
 
-    private List<String> loadKeysOfFile(String path) {
-        List<String> keys = new ArrayList<>();
-        try {
-            try (FileReader filereader = new FileReader(path)) {
-                BufferedReader reader = new BufferedReader(filereader);
-                while (reader.ready()) {
-                    String line = reader.readLine();
-                    if (!line.startsWith("#") && !line.isEmpty()) {
-                        keys.add(line);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.info("could not load key of path '{}': {}, {}",
-                    path, e.getClass().getName(), e.getMessage());
-        }
-        return keys;
-    }
-
-    private void displayKeys(View view, List<String> keys) {
+    private void displayKeys(List<String> keys) {
+        final View view = getView();
         LinearLayout container = view.findViewById(R.id.pubkeyAuthKeysContainer);
         container.removeAllViews();
         for (String key : keys) {
@@ -109,44 +89,5 @@ public class PubKeyAuthKeysFragment extends Fragment {
             textView.setText(R.string.noKeysPresent);
             container.addView(textView);
         }
-    }
-
-    protected void addKeyToFile(CharSequence key) {
-        final String path = Defaults.pubKeyAuthKeyPath(getContext());
-        if (validateKey(key)) {
-            try {
-                try (FileWriter writer = new FileWriter(path, true)) {
-                    writer.append("\n");
-                    writer.append(key);
-                }
-
-                View view = getView();
-                if (view != null) {
-                    List<String> keys = loadKeysForDisplay();
-                    displayKeys(view, keys);
-                }
-
-                ServersRunningBean serversRunningBean = ServicesStartStopUtil.checkServicesRunning(
-                        requireContext());
-                if (serversRunningBean.atLeastOneRunning()) {
-                    Toast.makeText(getContext(), R.string.restartServer, Toast.LENGTH_SHORT).show();
-                }
-            } catch (IOException e) {
-                logger.info("could not store key in file '{}': {}, {}",
-                        path, e.getClass().getName(), e.getMessage());
-            }
-        } else {
-            Toast.makeText(getContext(), R.string.pubkeyInvalid, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    protected boolean validateKey(CharSequence key) {
-        PublicKey pubKey = null;
-        try {
-            pubKey = KeyParser.parseKeyLine(key.toString());
-        } catch (Exception e) {
-            // handled by having pubKey equal null
-        }
-        return pubKey != null;
     }
 }

@@ -35,11 +35,11 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager.widget.ViewPager;
 
 public class MainTabsActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    protected static int INDEX_FINGERPRINTS = 0;
     protected static final String TAB_NAME_MAIN_UI = "pftpd";
     protected static final String TAB_NAME_QR = "QR";
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -47,9 +47,8 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
     protected MenuItem startIcon;
     protected MenuItem stopIcon;
 
-    protected PftpdFragment pftpdFragment;
-    protected QrFragment qrFragment;
     private MainAdapter adapter;
+    SharedViewModel vm;
 
     protected PftpdFragment createPftpdFragment() {
         return new PftpdFragment();
@@ -87,15 +86,16 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
         adapter = new MainAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
 
-        this.pftpdFragment = createPftpdFragment();
-        this.qrFragment = new QrFragment(pftpdFragment);
-        adapter.addFragment(pftpdFragment);
-        adapter.addFragment(qrFragment);
+        vm = new ViewModelProvider(this).get(SharedViewModel.class);
+        vm.init(this, logger);
+
+        adapter.addFragment(createPftpdFragment());
+        adapter.addFragment(new QrFragment());
         adapter.addFragment(new CleanSpaceFragment());
         adapter.addFragment(new ClientActionFragment());
         adapter.addFragment(new KeysFingerprintsFragment());
-        INDEX_FINGERPRINTS = adapter.getCount() - 1;
-        adapter.addFragment(new PubKeyAuthKeysFragment(isLeanback()));
+        vm.setFingerprintsFragmentTabIndex(adapter.getCount() - 1);
+        adapter.addFragment(new PubKeyAuthKeysFragment());
         adapter.addFragment(new FtpPrefsFragment());
         adapter.addFragment(new AboutFragment());
         updateTabNames();
@@ -113,7 +113,7 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
                 if (tabCharSeq != null) {
                     String tabText = tabCharSeq.toString();
                     if (TAB_NAME_QR.equals(tabText)) {
-                        qrFragment.drawIfChanged();
+                        vm.updateQrCode();
                     }
                 }
             }
@@ -124,10 +124,6 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
             public void onTabReselected(TabLayout.Tab tab) {
             }
         });
-    }
-
-    protected boolean isLeanback() {
-        return false;
     }
 
     @Override
@@ -268,7 +264,11 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
     public void handleStart() {
         logger.trace("handleStart()");
 
-        ServicesStartStopUtil.startServers(pftpdFragment);
+        ServicesStartStopUtil.startServers(this,
+                                           getSupportFragmentManager(),
+                                           vm.getChosenIp(),
+                                           vm.getKeyFingerprintProvider(),
+                                           vm.getPrefsBean());
     }
 
     protected void handleStop() {
@@ -298,7 +298,7 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
             updateTabNames();
         }
         if (LoadPrefsUtil.PREF_KEY_HOSTKEY_ALGOS.equals(key)) {
-            GenKeysAskDialogFragment askDiag = new GenKeysAskDialogFragment(pftpdFragment);
+            GenKeysAskDialogFragment askDiag = new GenKeysAskDialogFragment();
             askDiag.show(getSupportFragmentManager(), PftpdFragment.DIALOG_TAG);
         }
     }

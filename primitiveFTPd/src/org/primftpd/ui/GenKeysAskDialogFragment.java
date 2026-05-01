@@ -20,7 +20,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 
 public class GenKeysAskDialogFragment extends DialogFragment {
     public static final String KEY_START_SERVER = "START_SERVER";
@@ -29,11 +31,15 @@ public class GenKeysAskDialogFragment extends DialogFragment {
 
     private boolean startServerOnFinish;
 
-    private final PftpdFragment pftpdFragment;
+    private SharedViewModel vm;
 
-    public GenKeysAskDialogFragment(PftpdFragment pftpdFragment) {
-        this.pftpdFragment = pftpdFragment;
+    @Override
+    public void onCreate(@Nullable final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        vm = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
     }
+
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
@@ -64,7 +70,7 @@ public class GenKeysAskDialogFragment extends DialogFragment {
             return;
         }
 
-        KeyFingerprintProvider keyFingerprintProvider = pftpdFragment.getKeyFingerprintProvider();
+        KeyFingerprintProvider keyFingerprintProvider = vm.getKeyFingerprintProvider();
 
         // run in background to not block UI
         // note: in previous versions a progress dialog was shown here
@@ -109,11 +115,15 @@ public class GenKeysAskDialogFragment extends DialogFragment {
         // clean up
         // update UI in UI thread
         keyFingerprintProvider.calcPubkeyFingerprints(ctxt);
-        pftpdFragment.showKeyFingerprints();
+        vm.updateKeyFingerprints();
 
         if (startServerOnFinish) {
             // icon members should be set at this time
-            ServicesStartStopUtil.startServers(pftpdFragment);
+            ServicesStartStopUtil.startServers(getContext(),
+                                               requireActivity().getSupportFragmentManager(),
+                                               vm.getChosenIp(),
+                                               vm.getKeyFingerprintProvider(),
+                                               null);
         }
     }
 }
