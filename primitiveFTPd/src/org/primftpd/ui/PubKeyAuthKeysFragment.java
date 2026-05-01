@@ -6,22 +6,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 import org.primftpd.R;
-import org.primftpd.pojo.KeyParser;
-import org.primftpd.util.Defaults;
-import org.primftpd.util.ServersRunningBean;
-import org.primftpd.util.ServicesStartStopUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.security.PublicKey;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -75,6 +67,9 @@ public class PubKeyAuthKeysFragment extends Fragment {
 
     private void displayKeys(List<String> keys) {
         final View view = getView();
+        if (view == null) {
+            return;
+        }
         LinearLayout container = view.findViewById(R.id.pubkeyAuthKeysContainer);
         container.removeAllViews();
         for (String key : keys) {

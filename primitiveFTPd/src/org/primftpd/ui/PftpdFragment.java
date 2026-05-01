@@ -128,6 +128,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
 
         logger.debug("onCreateView()");
 
+        // viewModel observe key fingerprints
         vm.onShowKeyFingerprints().observe(getViewLifecycleOwner(),
                                            aVoid -> showKeyFingerprints());
         // layout
@@ -158,15 +159,18 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         EventBus.getDefault().register(this);
 
         // start on open ?
-        SharedPreferences prefs = LoadPrefsUtil.getPrefs(getContext());
-        Boolean startOnOpen = LoadPrefsUtil.startOnOpen(prefs);
-        if (startOnOpen) {
-            vm.getKeyFingerprintProvider().calcPubkeyFingerprints(getContext()); // see GH issue #204
-            ServicesStartStopUtil.startServers(getContext(),
-                                               requireActivity().getSupportFragmentManager(),
-                                               vm.getChosenIp(),
-                                               vm.getKeyFingerprintProvider(),
-                                               vm.getPrefsBean());
+        Context context = getContext();
+        if (context != null) {
+            SharedPreferences prefs = LoadPrefsUtil.getPrefs(context);
+            Boolean startOnOpen = LoadPrefsUtil.startOnOpen(prefs);
+            if (startOnOpen) {
+                vm.getKeyFingerprintProvider().calcPubkeyFingerprints(context); // see GH issue #204
+                ServicesStartStopUtil.startServers(context,
+                        vm.getPrefsBean(),
+                        vm.getKeyFingerprintProvider(),
+                        requireActivity().getSupportFragmentManager(),
+                        vm.getChosenIp());
+            }
         }
 
         // init views (loading & client action texts)
@@ -180,7 +184,7 @@ public class PftpdFragment extends Fragment implements RecreateLogger, RadioGrou
         ((TextView) view.findViewById(R.id.safExplain)).setMovementMethod(LinkMovementMethod.getInstance());
 
         // create sample authorized_keys files
-        new SampleAuthKeysFileCreator().createSampleAuthorizedKeysFiles(getContext());
+        new SampleAuthKeysFileCreator().createSampleAuthorizedKeysFiles(context);
 
         return view;
     }

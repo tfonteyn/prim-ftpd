@@ -130,7 +130,7 @@ public class QrFragment extends Fragment implements RecreateLogger {
                 false,
                 isLeftToRight);
 
-        PrefsBean prefsBean = vm.getPrefsBean(getContext(), logger);
+        PrefsBean prefsBean = vm.getPrefsBean();
 
         SharedPreferences prefs = LoadPrefsUtil.getPrefs(getContext());
         Boolean showIpv4 = LoadPrefsUtil.showIpv4InNotification(prefs);

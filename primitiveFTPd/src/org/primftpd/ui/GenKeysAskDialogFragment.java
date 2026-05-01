@@ -120,10 +120,10 @@ public class GenKeysAskDialogFragment extends DialogFragment {
         if (startServerOnFinish) {
             // icon members should be set at this time
             ServicesStartStopUtil.startServers(getContext(),
-                                               requireActivity().getSupportFragmentManager(),
-                                               vm.getChosenIp(),
+                                               vm.getPrefsBean(),
                                                vm.getKeyFingerprintProvider(),
-                                               null);
+                                               requireActivity().getSupportFragmentManager(),
+                                               vm.getChosenIp());
         }
     }
 }

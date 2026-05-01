@@ -2,8 +2,6 @@ package org.primftpd.ui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -75,20 +73,6 @@ public class SharedViewModel
 
         SharedPreferences prefs = LoadPrefsUtil.getPrefs(context);
         this.prefsBean = LoadPrefsUtil.loadPrefs(logger, prefs);
-    }
-
-    /**
-     * Reload the preference bean.
-     *
-     * @param context
-     * @param logger
-     *
-     * @return bean
-     */
-    public PrefsBean getPrefsBean(Context context,
-                                  Logger logger) {
-        loadPrefs(context, logger);
-        return prefsBean;
     }
 
     /**
@@ -179,9 +163,9 @@ public class SharedViewModel
     /**
      * Add the given key to the {@code authorized_keys}.
      *
-     * @param context
-     * @param key
-     * @param logger
+     * @param context context to be used
+     * @param key key to be stored
+     * @param logger logger to be used
      *
      * @return a message to show to the user, of {@code null} for none.
      */

@@ -47,10 +47,10 @@ public class ServicesStartStopUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServicesStartStopUtil.class);
 
     public static void startServers(@NonNull Context context,
-                                    @Nullable FragmentManager fragmentManager,
-                                    @Nullable String chosenIp,
+                                    @Nullable PrefsBean prefsBean,
                                     @Nullable KeyFingerprintProvider keyFingerprintProvider,
-                                    @Nullable PrefsBean prefsBean) {
+                                    @Nullable FragmentManager fragmentManager,
+                                    @Nullable String chosenIp) {
         startServers(context, prefsBean, keyFingerprintProvider, fragmentManager, null, chosenIp);
     }
 

@@ -34,11 +34,11 @@ public class LeanbackFragment extends PftpdFragment {
                             ServicesStartStopUtil.stopServers(ctxt);
                         } else {
                             ServicesStartStopUtil.startServers(
-                                    getContext(),
-                                    requireActivity().getSupportFragmentManager(),
-                                    vm.getChosenIp(),
+                                    ctxt,
+                                    vm.getPrefsBean(),
                                     vm.getKeyFingerprintProvider(),
-                                    vm.getPrefsBean());
+                                    requireActivity().getSupportFragmentManager(),
+                                    vm.getChosenIp());
                         }
                     });
         }

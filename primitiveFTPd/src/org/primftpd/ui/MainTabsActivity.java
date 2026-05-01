@@ -88,6 +88,7 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
 
         vm = new ViewModelProvider(this).get(SharedViewModel.class);
         vm.init(this, logger);
+        vm.setLeanBack(false); // explicitly set to false, to avoid warning
 
         adapter.addFragment(createPftpdFragment());
         adapter.addFragment(new QrFragment());
@@ -265,10 +266,10 @@ public class MainTabsActivity extends AppCompatActivity implements SharedPrefere
         logger.trace("handleStart()");
 
         ServicesStartStopUtil.startServers(this,
-                                           getSupportFragmentManager(),
-                                           vm.getChosenIp(),
+                                           vm.getPrefsBean(),
                                            vm.getKeyFingerprintProvider(),
-                                           vm.getPrefsBean());
+                                           getSupportFragmentManager(),
+                                           vm.getChosenIp());
     }
 
     protected void handleStop() {
