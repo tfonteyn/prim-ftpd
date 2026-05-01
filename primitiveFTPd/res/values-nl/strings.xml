@@ -21,6 +21,14 @@
     <string name="saveAs">Opslaan als</string>
     <string name="startService">Start server</string>
     <string name="stopService">Stop server</string>
-    <string name="toggleService">"Server snel starten/stoppen "</string>
+    <string name="toggleService">Server snel starten/stoppen</string>
     <string name="notificationTitle">FTP server</string>
+    <string name="prefs">Instellingen</string>
+    <string name="prefsCategoryTitleAuth">Authenticatie</string>
+    <string name="prefsCategoryTitleConnectivity">Connectiviteit</string>
+    <string name="prefsCategoryTitleSystem">Systeem</string>
+    <string name="prefTitleUser">Gebruikersnaam</string>
+    <string name="usernameLabel">Gebruikersnaam: %s</string>
+    <string name="unknown">Onbekend</string>
+    <string name="prefTitlePort">Poort</string>
 </resources>

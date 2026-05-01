@@ -155,4 +155,7 @@
     <string name="rootTmpFiles">Fichiers temporaires d\'accès root :</string>
     <string name="fingerprintsCreationTimeLabel">Heure de création</string>
     <string name="unknown">inconnu</string>
+    <string name="usernameLabel">Nom d\'utilisateur : %s</string>
+    <string name="prefSummaryChooseBindIp">Affiche des boutons radio dans l\'interface utilisateur pour choisir l\'IP de liaison au démarrage du serveur. Prioritaire sur la préférence d\'adresse IP ci-dessus. Ne s\'applique pas si le serveur est démarré par un autre mécanisme.</string>
+    <string name="prefChooseBindIp">Choisir l\'IP de liaison dans l\'interface utilisateur</string>
 </resources>

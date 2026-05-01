@@ -173,4 +173,5 @@
     <string name="pubkeyAuthKeysHeading">Claves para la autenticación de clave pública</string>
     <string name="addPubkeyForAuth">Agregar clave pública para la autenticación</string>
     <string name="safExplainV2">Android le pedirá que elija una carpeta. Ésta estará disponible a través de uno o más servidores. ¿Se revoca el permiso y tiene que volver a seleccionarlo periódicamente? Consulte nuestra <a href="https://www.github.com/wolpi/prim-ftpd/">página de GitHub</a>.</string>
+    <string name="usernameLabel">Nombre de usuario: %s</string>
 </resources>
