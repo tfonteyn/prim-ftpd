@@ -15,8 +15,8 @@ android {
 
     defaultConfig {
         applicationId = "org.primftpd"
-        versionCode = 70
-        versionName = "8.1"
+        versionCode = 71
+        versionName = "8.2-SNAPSHOT"
 
         minSdk = libs.versions.minSdk.get().toInteger()
         targetSdk = libs.versions.targetSdk.get().toInteger()
